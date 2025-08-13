@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Whatsapp Mass Message Sender</title>
+    <link rel='stylesheet' href='style.css'>
+    <script src='https://kit.fontawesome.com/0f0486bb75.js' crossorigin='anonymous'></script>
+    <script src='script.js' defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📨 WhatsApp Mass Sender</h1>
+
+        <textarea rows="1" id="session" placeholder="Session name (e.g. client1)"></textarea>
+        <button onclick="generateQr()">Generate QR</button>
+        <div id="qr">QR Code Here</div>
+
+
+        <textarea id="names" rows="4" placeholder="Enter name (comma or new line separated)"></textarea>
+        <textarea id="message" rows="3" placeholder="Enter your message"></textarea>
+        <button onclick="sendMessages()">Send Messages</button>
+
+        <div class="status" id="status"></div>
+    </div>
+</body>
+
+</html>

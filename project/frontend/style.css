@@ -1,0 +1,240 @@
+/* Custom styles for WhatsApp Automation App */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Focus states */
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button animations */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  transform: none;
+}
+
+/* QR Code container animations */
+#qrContainer {
+  transition: all 0.3s ease-in-out;
+}
+
+#qrCodeImg {
+  max-width: 280px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Status message animations */
+#statusMessages > div {
+  max-width: 350px;
+  min-width: 200px;
+}
+
+/* Results section animations */
+#resultsSection {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Contact buttons hover effect */
+#contactsGrid button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .max-w-7xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  #statusMessages {
+    left: 1rem;
+    right: 1rem;
+  }
+  
+  #statusMessages > div {
+    max-width: none;
+  }
+  
+  #qrCodeImg {
+    max-width: 240px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .border-gray-300 {
+    border-color: #000;
+  }
+  
+  .text-gray-500 {
+    color: #333;
+  }
+  
+  .bg-gray-50 {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Print styles */
+@media print {
+  #statusMessages,
+  button {
+    display: none !important;
+  }
+  
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}
+
+/* Dark mode support (if system preference) */
+@media (prefers-color-scheme: dark) {
+  /* This would be implemented if dark mode is desired */
+  /* Currently maintaining light theme for better WhatsApp integration */
+}
+
+/* Custom utility classes */
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transform {
+  transform: translateZ(0);
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus visible for better keyboard navigation */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Enhanced button states */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-success {
+  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Input field enhancements */
+.form-input {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
+}
+
+/* Card component */
+.card {
+  @apply bg-white rounded-xl shadow-md border border-gray-200;
+}
+
+.card-header {
+  @apply p-6 border-b border-gray-200;
+}
+
+.card-body {
+  @apply p-6;
+}
+
+/* Status indicators */
+.status-success {
+  @apply bg-green-50 text-green-800 border-green-200;
+}
+
+.status-error {
+  @apply bg-red-50 text-red-800 border-red-200;
+}
+
+.status-info {
+  @apply bg-blue-50 text-blue-800 border-blue-200;
+}
+
+.status-warning {
+  @apply bg-yellow-50 text-yellow-800 border-yellow-200;
+}

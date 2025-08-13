@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Multi-Session Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp Message Sender</h1>
+        
+        <!-- Step 1: Sender Authentication -->
+        <div id="authSection" class="section">
+            <h2>Step 1: Authenticate Sender</h2>
+            <div class="form-group">
+                <label for="senderName">Sender Name:</label>
+                <input 
+                    type="text" 
+                    id="senderName" 
+                    placeholder="Enter your name"
+                    required
+                >
+            </div>
+            <button id="authBtn">Start Authentication</button>
+            
+            <!-- QR Code Display -->
+            <div id="qrSection" class="qr-section hidden">
+                <h3>Scan QR Code with WhatsApp</h3>
+                <div id="qrCode" class="qr-code"></div>
+                <p class="qr-instructions">Open WhatsApp on your phone → Settings → Linked Devices → Link a Device</p>
+            </div>
+            
+            <div id="authStatus" class="status-message hidden"></div>
+        </div>
+        
+        <!-- Step 2: Send Messages -->
+        <div id="messageSection" class="section hidden">
+            <h2>Step 2: Send Messages</h2>
+            <div class="session-info">
+                <span>Logged in as: <strong id="currentSender"></strong></span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+            
+            <form id="messageForm">
+                <div class="form-group">
+                    <label for="names">Recipients (comma-separated):</label>
+                    <input 
+                    type="text" 
+                    id="names" 
+                    placeholder="John Doe, Jane Smith, Bob Johnson"
+                    required
+                    >
+                </div>
+                
+                <button id="refreshQR" class="hidden">Refresh QR Code</button>
+                <div class="form-group">
+                    <label for="message">Message:</label>
+                    <textarea 
+                        id="message" 
+                        rows="5" 
+                        placeholder="Enter your message here..."
+                        required
+                    ></textarea>
+                </div>
+                
+                <button type="submit" id="sendBtn">Send Messages</button>
+            </form>
+        </div>
+
+
+        <!-- Results -->
+        <div id="results" class="results hidden">
+            <h2>Results</h2>
+            <div id="resultsList"></div>
+        </div>
+        
+        <!-- Loading -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

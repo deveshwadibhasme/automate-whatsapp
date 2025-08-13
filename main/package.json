@@ -1,0 +1,18 @@
+{
+  "name": "whatsapp-multi-session-automation",
+  "version": "1.0.0",
+  "description": "WhatsApp multi-session automation with QR in UI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "venom-bot": "^5.0.21"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

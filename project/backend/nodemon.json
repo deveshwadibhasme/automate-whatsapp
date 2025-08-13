@@ -1,0 +1,13 @@
+{
+  "watch": ["."],
+  "ext": "js,json",
+  "ignore": [
+    "../frontend/**",
+    "../node_modules/**",
+    "../tokens/**",
+    "tokens/**",
+    "session/**",
+    "wwebjs_auth/**",
+    "WPPConnect/**"
+  ]
+}
