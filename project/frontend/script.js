@@ -307,6 +307,11 @@ async function extractTeam(text, teamCode) {
 
 
 recipientsInput.addEventListener('input', async () => {
+    if(teamName.value.trim() === '') {
+        showStatusMessage('Please enter a team code', 'error');
+         recipientsInput.value = '';
+        return;
+    }
     const extractedTeam = await extractTeam(recipientsInput.value.trim(), teamName.value.trim())
     if(recipientsInput.value !== '') {
         recipientsInput.value = extractedTeam.join(', ')

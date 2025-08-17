@@ -81,7 +81,7 @@ async function getContactMap() {
   const contacts = await loadContacts();
   const contactMap = new Map();
   contacts.forEach(contact => {
-    contactMap.set(contact.name.toLowerCase(), contact.number);
+    contactMap.set(contact.name, contact.number);
   });
   return contactMap;
 }
@@ -286,7 +286,6 @@ app.post('/api/send-message', async (req, res) => {
 
     // Parse recipient names
     const recipientNames = names.split(',').map(name => name.trim()).filter(name => name);
-
     if (recipientNames.length === 0) {
       return res.status(400).json({
         success: false,
@@ -302,7 +301,9 @@ app.post('/api/send-message', async (req, res) => {
     let failCount = 0;
 
     for (const name of recipientNames) {
-      const number = contactMap.get(name.toLowerCase());
+      console.log(recipientNames)
+      console.log(name)
+      const number = contactMap.get(name);
 
       if (!number) {
         results.push({ name, status: 'failed', error: 'Contact not found' });
