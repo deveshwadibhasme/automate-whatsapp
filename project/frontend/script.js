@@ -20,6 +20,7 @@ const qrLoader = document.getElementById('qrLoader');
 const sessionReady = document.getElementById('sessionReady');
 
 const recipientsInput = document.getElementById('recipients');
+const teamName = document.getElementById('team');
 const messageTextArea = document.getElementById('messageText');
 const sendMessageBtn = document.getElementById('sendMessageBtn');
 const sendMessageText = document.getElementById('sendMessageText');
@@ -276,6 +277,43 @@ function showSessionReady() {
     sessionReady.classList.remove('hidden');
 }
 
+messageTextArea.value = `सत् साहिब जी 
+अपने ${new Date().getDate()} तारीख की रिपोर्ट नहीं भरी है जी
+कृपया समय मिलने पर से आज सेवा करके रिपोर्ट भर देना जी`
+
+async function extractTeam(text, teamCode) {
+  // Saare teams ke block split
+  const parts = text.split(/T-\d+\s*-/);
+
+  // Har ek split ke aage waala team code bhi pakdo
+  const matches = text.match(/T-\d+\s*-/g);
+
+  if (!matches) return [];
+
+  const result = [];
+
+  matches.forEach((match, i) => {
+    if (match.trim().startsWith(teamCode)) {
+      // Split ke andar se names nikalna
+      const block = parts[i + 1].split(/T-\d+\s*-/)[0]; 
+      // names ko clean karo
+      const names = block.split(/\s{2,}|\n/).map(n => n.trim()).filter(n => n);
+      result.push(names); // us team ka pehla naam
+    }
+  });
+
+  return result;
+}
+
+
+recipientsInput.addEventListener('input', async () => {
+    const extractedTeam = await extractTeam(recipientsInput.value.trim(), teamName.value.trim())
+    if(recipientsInput.value !== '') {
+        recipientsInput.value = extractedTeam.join(', ')
+    }
+})
+
+
 // Message sending
 async function sendMessages() {
     if (!currentSession) {
@@ -283,7 +321,8 @@ async function sendMessages() {
         return;
     }
 
-    const recipients = recipientsInput.value.trim();
+
+    const recipients = recipientsInput.value.trim() || await extractTeam(recipientsInput.value.trim(), teamName.value.trim());
     const message = messageTextArea.value.trim();
 
     if (!recipients || !message) {

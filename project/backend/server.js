@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const {MongoClient} = require("mongodb")
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,10 +29,6 @@ io.on('connection', (socket) => {
   });
 });
 
-
-
-
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -43,6 +40,29 @@ app.use(express.static('frontend'));
 const clients = new Map();
 const sessionStates = new Map(); // Track session states
 const sessionQrCodes = new Map(); // Track latest QR per session
+
+// const uri = process.env.MONGO_URI; 
+const uri = 'mongodb://localhost:27017/whatsappApp'
+const clientDB = new MongoClient(uri);
+
+async function saveSessionToDB(senderName, sessionData) {
+  const db = clientDB.db("whatsappApp");
+  const sessions = db.collection("sessions");
+  console.log('Saving Data...');
+  await sessions.updateOne(
+    { senderName },
+    { $set: { sessionData, updatedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+async function getSessionFromDB(senderName) {
+  const db = clientDB.db("whatsappApp");
+  const sessions = db.collection("sessions");
+
+  const session = await sessions.findOne({ senderName });
+  return session ? session.sessionData : null;
+}
 
 // Load contacts from JSON file
 async function loadContacts() {
@@ -68,29 +88,30 @@ async function getContactMap() {
 
 // API endpoint to start a new session
 app.post('/api/start-session', async (req, res) => {
-
-  const maxWaitTime = 60000; // 60 seconds
-
-  let qrGenerated = false;
+  const maxWaitTime = 60000; // 60s max
   try {
     const { senderName } = req.body;
 
+     const sessionData = await getSessionFromDB(senderName);
+
     if (!senderName || typeof senderName !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Sender name is required'
-      });
+      return res.status(400).json({ success: false, error: 'Sender name is required' });
     }
 
-    // Check if session already exists and is active
+    // Check if session already exists
     if (clients.has(senderName)) {
       const existingClient = clients.get(senderName);
-      if (existingClient && await existingClient.isConnected()) {
-        return res.json({
-          success: true,
-          message: 'Session already active',
-          sessionReady: true
-        });
+      try {
+        const isConnected = await existingClient.isConnected();
+        if (isConnected) {
+          return res.json({
+            success: true,
+            message: 'Session already active',
+            sessionReady: true
+          });
+        }
+      } catch (err) {
+        console.warn(`Session check failed for ${senderName}:`, err.message);
       }
     }
 
@@ -100,76 +121,80 @@ app.post('/api/start-session', async (req, res) => {
     let qrCode = null;
     let sessionReady = false;
 
-    // Create Venom client (resolve immediately; show QR via callback)
-    const client = await create({
-      session: senderName,
-      headless: true,
-      devtools: false,
-      useChrome: false,
-      multidevice: true,
-      debug: false,
-      logQR: true,
-      browserArgs: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu'
-      ],
-      qrTimeout: 20000,
-      refreshQR: 20000,
-      autoClose: 0,
-      waitForLogin: false,
-      disableSpins: true,
-      disableWelcome: true
-    },
-      (base64Qr, asciiQR, attempts, urlCode) => {
-        io.emit('qr', { senderName, qr: base64Qr });
-        qrGenerated = true;
-        sessionQrCodes.set(senderName, base64Qr);
-        sessionStates.set(senderName, 'qr-ready');
+    // ---- Venom client creation ----
+    const client = await create(
+      {
+        session: senderName,
+        multidevice: true,
+        headless: true,
+        logQR: false, // don't log ASCII in terminal
+        catchQR: (base64Qr) => {
+          qrCode = base64Qr;
+          sessionQrCodes.set(senderName, base64Qr);
+          sessionStates.set(senderName, 'qr-ready');
+          io.emit('qr', { senderName, qr: base64Qr });
+        },
+        sessionData,
+        browserArgs: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu'
+        ],
+        autoClose: 0,
+        disableSpins: true,
+        disableWelcome: true
       },
-      (statusSession) => {
-        console.log(`Status Session: ${statusSession} for ${senderName}`);
-        if (statusSession === 'qrReadSuccess') {
-          sessionStates.set(senderName, 'qr-scanned');
-        }
+      undefined, // ascii QR callback not needed
+      async (statusSession, session) => {
+        console.log(`Session ${senderName} status: ${statusSession}`);
+
         if (statusSession === 'isLogged') {
-          sessionReady = true;
-          sessionStates.set(senderName, 'ready');
-          sessionQrCodes.delete(senderName);
-        }
-        if (statusSession === 'notLogged') {
-          sessionStates.set(senderName, 'not-logged');
+          // 2. Save tokens when logged in
+          const newTokens = await client.getSessionTokenBrowser();
+          await saveSessionToDB(senderName, newTokens);
         }
       }
+      // (statusSession) => {
+      //   console.log(`Status ${statusSession} for ${senderName}`);
+      //   if (statusSession === 'qrReadSuccess') {
+      //     sessionStates.set(senderName, 'qr-scanned');
+      //   }
+      //   if (statusSession === 'isLogged') {
+      //     sessionReady = true;
+      //     sessionStates.set(senderName, 'ready');
+      //     sessionQrCodes.delete(senderName);
+      //   }
+      //   if (statusSession === 'notLogged') {
+      //     sessionStates.set(senderName, 'not-logged');
+      //   }
+      // }
     );
 
     clients.set(senderName, client);
 
-    // Wait until either QR appears or login happens
-    const startTime = Date.now();
-    while (!qrGenerated && !sessionReady && (Date.now() - startTime) < maxWaitTime) {
+    // ---- Wait loop ----
+    const start = Date.now();
+    while (!qrCode && !sessionReady && (Date.now() - start) < maxWaitTime) {
       await new Promise(r => setTimeout(r, 500));
     }
 
     res.json({
       success: true,
-      qrCode: sessionQrCodes.get(senderName) || null,
+      qrCode: qrCode || null,
       sessionReady,
       message: sessionReady ? 'Session is ready' : 'QR Code generated, please scan'
     });
 
   } catch (error) {
     console.error('Error starting session:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to start session: ' + error.message
-    });
+    res.status(500).json({ success: false, error: 'Failed: ' + error.message });
   }
 });
+
 
 
 
